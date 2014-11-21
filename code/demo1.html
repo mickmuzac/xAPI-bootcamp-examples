@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+		
+		<!-- include dependencies -->
+		<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js'></script>
+		<script type='text/javascript' src='lib/xapicollection.min.js'></script>
+		<script type='text/javascript' src='lib/xapidashboard.min.js' charset="utf-8"></script>
+		<script type='text/javascript' src='lib/gen-lrs-data.js'></script>
+		<link rel='stylesheet' href='lib/nv.d3.css'></script>
+		<link rel='stylesheet' href='lib/styles.css'></script>
+		
+		<!-- include a basic style for laying out the graphs -->
+		<style>
+			h2,p {
+				text-align: center;
+			}
+			.container {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: center;
+				align-items: center;
+			}
+			.graph svg {
+				width: 800px;
+				height: 400px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class='container-fluid'>
+			<div class="row test-header">
+				<button class="btn btn-info" data-bind="click: handleDataLoad(0)">Load all data</button>
+				<button class="btn btn-success" data-bind="click: handleDataLoad(1)">Load filtered data</button>
+			</div>
+			<div class="row full" data-bind="foreach: results">
+				<div class="col-md-4 full" data-bind="css: 'color-' + $index(), if: $data">
+					<table class="table table-striped">
+						<tbody data-bind="foreach: $data">
+							<tr>
+								<td data-bind="text: $data[0], css: $index() == 0 ? 'lead' : ''" class="col-md-6"></td>
+								<td data-bind="text: $data[1], css: $index() == 0 ? 'lead' : ''" class="col-md-6"></td>
+							</tr>								
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<!-- pushed to the end of body for quicker load times -->
+		<script>
+			// do this to fetch live data from an LRS
+			ADL.XAPIWrapper.changeConfig({'endpoint': 'https://lrs.adlnet.gov/xAPI/'});
+			var dash = new ADL.XAPIDashboard();
+			var vm = {
+				results: [ko.observableArray(), ko.observableArray(), ko.observableArray()],
+				handleDataLoad: function(index){ return handleDataLoad.bind({index: index}); },
+			};
+			
+			function handleDataLoad(){
+				var result = vm.results[this.index];
+				result.removeAll();
+				result()[0] = ["Loading data...", ""];
+				result.valueHasMutated();
+				
+				switch(this.index){
+					case 0: 
+						printFetchAllTiming({}, result); 
+						break;
+					case 1: 
+						var queryObj = ADL.XAPIWrapper.searchParams(); 
+						queryObj['verb'] = ADL.verbs.completed.id; 
+						printFetchAllTiming(queryObj, result);
+						break;
+					case 2: 
+						// do cached server timing here
+						break;
+				}
+			}
+			
+			function printFetchAllTiming(query, result){
+				var startTime = performance.now();
+				
+				dash.fetchAllStatements(query, function(data){
+					var deltaTime = performance.now() - startTime;
+					
+					result.push(["# of statements fetched", numberWithCommas(data.contents.length)]);
+					result.push(["# of requests made", dash.pages]);
+					result.push(["Time taken fetching", parseFloat(deltaTime * .001).toFixed(2) + "s"]);
+					
+					result()[0] = ["Aggregating statements...", ""];
+					result.valueHasMutated();
+					
+					startTime = performance.now();
+					(new ADL.Collection(data)).groupBy('actor.name').count().exec(function(c){
+						deltaTime = performance.now() - startTime;
+						result()[0] = ["Done", ""];
+						result.push(["Time taken aggregating", deltaTime + "ms"]);
+						data.contents.length = 0;
+					});
+				});
+			}
+			
+			function numberWithCommas(x) {
+				var parts = x.toString().split(".");
+				parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				return parts.join(".");
+			}
+
+			// do this to use the pre-loaded handwaved LRS data
+			/*(function(cb){dash.addStatements(window.statements);cb();})(function(){				
+			});*/
+
+			ko.applyBindings(vm);
+
+
+		</script>
+	</body>
+</html>
