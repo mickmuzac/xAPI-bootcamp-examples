@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+		
+		<!-- include dependencies -->
+		<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js'></script>
+		<script type='text/javascript' src='lib/xapicollection.min.js'></script>
+		<script type='text/javascript' src='lib/xapidashboard.js' charset="utf-8"></script>
+		<script type='text/javascript' src='lib/gen-lrs-data.js'></script>
+		<link rel='stylesheet' href='lib/nv.d3.css'></script>
+		<link rel='stylesheet' href='lib/styles.css'></script>
+		
+		<!-- include a basic style for laying out the graphs -->
+		<style>
+			h2,p {
+				text-align: center;
+			}
+			.container {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: center;
+				align-items: center;
+			}
+			.graph svg {
+				width: 800px;
+				height: 400px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class='container-fluid'>
+			<div class="row test-header">
+				<button class="btn btn-info">Button 1</button>
+				<button class="btn btn-success">Button 2</button>
+			</div>
+			<div class="row full">
+				<!-- charts 'n stuff here -->
+			</div>
+		</div>
+		<script>
+			ADL.XAPIWrapper.changeConfig({'endpoint': 'https://lrs.adlnet.gov/xAPI/'});
+			var dash = new ADL.XAPIDashboard();
+		</script>
+	</body>
+</html>

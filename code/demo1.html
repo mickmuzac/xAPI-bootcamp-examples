@@ -11,7 +11,7 @@
 		<!-- include dependencies -->
 		<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js'></script>
 		<script type='text/javascript' src='lib/xapicollection.min.js'></script>
-		<script type='text/javascript' src='lib/xapidashboard.min.js' charset="utf-8"></script>
+		<script type='text/javascript' src='lib/xapidashboard.js' charset="utf-8"></script>
 		<script type='text/javascript' src='lib/gen-lrs-data.js'></script>
 		<link rel='stylesheet' href='lib/nv.d3.css'></script>
 		<link rel='stylesheet' href='lib/styles.css'></script>
@@ -40,6 +40,7 @@
 			<div class="row test-header">
 				<button class="btn btn-info" data-bind="click: handleDataLoad(0)">Load all data</button>
 				<button class="btn btn-success" data-bind="click: handleDataLoad(1)">Load filtered data</button>
+				<button class="btn btn-primary" data-bind="click: handleDataLoad(2)">Load cached data</button>
 			</div>
 			<div class="row full" data-bind="foreach: results">
 				<div class="col-md-4 full" data-bind="css: 'color-' + $index(), if: $data">
@@ -81,7 +82,17 @@
 						printFetchAllTiming(queryObj, result);
 						break;
 					case 2: 
-						// do cached server timing here
+						// do cached server benchmarking here
+						
+						/*
+							result.push(["# of statements fetched", numberWithCommas(data.contents.length)]);
+							result.push(["# of requests made", dash.pages]);
+							result.push(["Time taken fetching", parseFloat(deltaTime * .001).toFixed(2) + "s"]);							
+							result.push(["Time taken aggregating", deltaTime.toFixed(2) + "ms"]);
+							
+							result()[0] = ["Done", ""];
+							result.valueHasMutated();
+						*/
 						break;
 				}
 			}
@@ -103,7 +114,7 @@
 					(new ADL.Collection(data)).groupBy('actor.name').count().exec(function(c){
 						deltaTime = performance.now() - startTime;
 						result()[0] = ["Done", ""];
-						result.push(["Time taken aggregating", deltaTime + "ms"]);
+						result.push(["Time taken aggregating", deltaTime.toFixed(2) + "ms"]);
 						data.contents.length = 0;
 					});
 				});

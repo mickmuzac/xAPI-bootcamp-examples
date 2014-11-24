@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+		
 		<!-- include dependencies -->
+		<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js'></script>
 		<script type='text/javascript' src='lib/xapicollection.min.js'></script>
-		<script type='text/javascript' src='lib/xapidashboard.min.js'></script>
+		<script type='text/javascript' src='lib/xapidashboard.js' charset="utf-8"></script>
 		<script type='text/javascript' src='lib/gen-lrs-data.js'></script>
 		<link rel='stylesheet' href='lib/nv.d3.css'></script>
+		<link rel='stylesheet' href='lib/styles.css'></script>
 		
 		<!-- include a basic style for laying out the graphs -->
 		<style>
@@ -19,43 +27,58 @@
 				justify-content: center;
 				align-items: center;
 			}
-			.graph svg {
+			.graph{
+				width: 40%;
+			}
+			svg {
 				width: 800px;
 				height: 400px;
 			}
-			.graph svg#pie {
-				width: 400px;
-				height: 400px;
+			#testScores{
+				width: 50%;
+				margin: 0 auto;
+			}
+			.row{
+				position: relative;
 			}
 		</style>
 	</head>
-
 	<body>
-		<div class='container'>
-
-			<!-- graph for the first question: mix, max, and average of tests -->
-			<div class='graph' id='testScores'>
-				<h2>Class Test Statistics</h2>
-				<svg></svg>
+		<div class='container-fluid'>
+			<div class="row test-header">
+				<a class="btn btn-info" id="classTestCSV" download="class-test.csv">Class Test CSV</a>
+				<a class="btn btn-success" id="classScoresCSV" download="class-scores.csv">Class Scores CSV</a>
+				<a class="btn btn-primary" id="studentScoresCSV" download="student-scores.csv">Student Scores CSV</a>
 			</div>
-
-			<!-- graph for the second question: student count per letter grade -->
-			<div class='graph' id='scoreBrackets'>
-				<h2>Class Scores For All Tests</h2>
-				<p>(<a href='javascript:;' onclick='resetScoreBrackets()'>reset</a>)</p>
-				<div class='container'>
-					<svg id='bar'></svg>
-					<svg id='pie'></svg>
+			
+			<div class="row">
+				<!-- graph for the first question: mix, max, and average of tests -->
+				<div class='graph' id='testScores'>
+					<h2>Class Test Statistics</h2>
+					<svg></svg>
 				</div>
 			</div>
-
-			<!-- graph for third question: students who scored in a particular range -->
-			<div class='graph' id='studentScores'>
-				<h2>Student High Scores</h2>
-				<p>(<a href='javascript:;' onclick='resetStudentScores()'>reset</a>)</p>
-				<svg></svg>
+			<div class="row">
+				<!-- graph for the second question: student count per letter grade -->
+				<div id='scoreBrackets'>
+					<h2>Class Scores For All Tests</h2>
+					<p>(<a href='javascript:;' onclick='resetScoreBrackets()'>reset</a>)</p>
+					<div class='col-md-6'>
+						<svg id='bar'></svg>
+					</div>
+					<div class='col-md-6'>
+						<svg id='pie'></svg>
+					</div>
+				</div>
 			</div>
-
+			<div class="row">
+				<!-- graph for third question: students who scored in a particular range -->
+				<div class="graph graph col-md-6" id='studentScores'>
+					<h2>Student High Scores</h2>
+					<p>(<a href='javascript:;' onclick='resetStudentScores()'>reset</a>)</p>
+					<svg></svg>
+				</div>
+			</div>
 		</div>
 
 		<!-- pushed to the end of body for quicker load times -->
@@ -134,6 +157,7 @@
 							var parts = evt.in.split('-').map(parseInt);
 							nvd3chart.forceY(parts);
 						}
+						updateCSV();
 					}
 				});
 
@@ -164,6 +188,7 @@
 					// and hide the redundant legend
 					customize: function(nvd3chart){
 						nvd3chart.showLegend(false);
+						updateCSV();
 					},
 
 					// if it's clicked on, pass click data to the studentScores chart
@@ -211,6 +236,10 @@
 
 					// put the number of items in each group on the y-axis
 					aggregate: ADL.count(),
+					
+					customize: function(){
+						updateCSV();
+					},
 
 					// filter and redraw student scores on click
 					child: dash.studentScores
@@ -239,6 +268,8 @@
 							return /[^\/]*$/.exec(label)[0];
 						});
 						nvd3chart.forceY([0,100]);
+						
+						updateCSV();
 					},
 
 					// and on click, update these charts
@@ -262,7 +293,12 @@
 				dash.studentScores.event = null;
 				dash.studentScores.draw();
 			}
-
+			
+			function updateCSV(){
+				ADL.$('#classTestCSV').href = dash.testScores.getCSVDataURI();
+				ADL.$('#classScoresCSV').href = dash.scoreBrackets.getCSVDataURI();
+				ADL.$('#studentScoresCSV').href = dash.studentScores.getCSVDataURI();
+			}
 		</script>
 	</body>
 </html>

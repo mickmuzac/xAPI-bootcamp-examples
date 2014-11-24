@@ -22,7 +22,11 @@ td{
 	text-align: center;
 }
 
-html, body, .container-fluid, .full{
+.full{
 	height: 100%;
 	overflow: hidden;
+}
+
+html, body, .container-fluid{
+	height: 100%;
 }
