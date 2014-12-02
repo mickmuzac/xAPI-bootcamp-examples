@@ -105,16 +105,17 @@
 					
 					result.push(["# of statements fetched", numberWithCommas(data.contents.length)]);
 					result.push(["# of requests made", dash.pages]);
-					result.push(["Time taken fetching", parseFloat(deltaTime * .001).toFixed(2) + "s"]);
+					result.push(["Time spent fetching", parseFloat(deltaTime * .001).toFixed(2) + "s"]);
 					
 					result()[0] = ["Aggregating statements...", ""];
 					result.valueHasMutated();
 					
+					var collection = new ADL.Collection(data);
 					startTime = performance.now();
-					(new ADL.Collection(data)).groupBy('actor.name').count().exec(function(c){
+					collection.groupBy('actor.name').count().exec(function(c){
 						deltaTime = performance.now() - startTime;
 						result()[0] = ["Done", ""];
-						result.push(["Time taken aggregating", deltaTime.toFixed(2) + "ms"]);
+						result.push(["Time spent aggregating", deltaTime.toFixed(2) + "ms"]);
 						data.contents.length = 0;
 					});
 				});
